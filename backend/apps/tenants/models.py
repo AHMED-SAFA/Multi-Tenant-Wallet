@@ -1,9 +1,17 @@
 import uuid
 from django.db import models
+from django.conf import settings
 
 
 class Tenant(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="tenant",
+        null=True,
+        blank=True,
+    )
     name = models.CharField(max_length=255, unique=True)
     api_key = models.CharField(max_length=64, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)

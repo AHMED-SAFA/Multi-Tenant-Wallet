@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  createTenant,
   createWallet,
   deposit,
   withdraw,
@@ -8,7 +7,10 @@ import {
   getBalance,
   getTransactions,
   downloadStatement,
+  getMe,
+  logout as apiLogout,
 } from "./api";
+import Auth from "./Auth";
 
 export default function App() {
   const [tenant, setTenant] = useState(null);
@@ -18,22 +20,34 @@ export default function App() {
   const show = (res) => setLog(JSON.stringify(res.data, null, 2));
   const showErr = (err) =>
     setLog(JSON.stringify(err.response?.data ?? err.message, null, 2));
+  const [loggedIn, setLoggedIn] = useState(
+    !!localStorage.getItem("access_token"),
+  );
 
-  const handleCreateTenant = async (e) => {
-    e.preventDefault();
+  const handleLogout = async () => {
     try {
-      const res = await createTenant(e.target.name.value);
-      setTenant(res.data);
-      show(res);
-    } catch (err) {
-      showErr(err);
-    }
+      await apiLogout(localStorage.getItem("refresh_token"));
+    } catch (_) {}
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("wallet");
+    setTenant(null);
+    setWallet(null);
+    setLoggedIn(false);
   };
+
+  useEffect(() => {
+    if (loggedIn) {
+      getMe()
+        .then((res) => setTenant(res.data))
+        .catch(() => handleLogout());
+    }
+  }, [loggedIn]);
 
   const handleCreateWallet = async (e) => {
     e.preventDefault();
     try {
-      const res = await createWallet(tenant.api_key, e.target.owner.value);
+      const res = await createWallet(e.target.owner.value);
       setWallet(res.data);
       show(res);
     } catch (err) {
@@ -49,14 +63,13 @@ export default function App() {
     const daysMap = { 1: 1, 2: 6, 3: 12 };
     const days = daysMap[choice];
     if (!days) return; // cancelled or invalid input
-    downloadStatement(tenant.api_key, wallet.id, days);
+    downloadStatement(wallet.id, days);
   };
 
   const handleDeposit = async (e) => {
     e.preventDefault();
     try {
       const res = await deposit(
-        tenant.api_key,
         wallet.id,
         e.target.amount.value,
         crypto.randomUUID(),
@@ -71,7 +84,6 @@ export default function App() {
     e.preventDefault();
     try {
       const res = await withdraw(
-        tenant.api_key,
         wallet.id,
         e.target.amount.value,
         crypto.randomUUID(),
@@ -86,7 +98,6 @@ export default function App() {
     e.preventDefault();
     try {
       const res = await transfer(
-        tenant.api_key,
         wallet.id,
         e.target.to_wallet_id.value,
         e.target.amount.value,
@@ -100,7 +111,7 @@ export default function App() {
 
   const handleBalance = async () => {
     try {
-      const res = await getBalance(tenant.api_key, wallet.id);
+      const res = await getBalance(wallet.id);
       show(res);
     } catch (err) {
       showErr(err);
@@ -109,20 +120,22 @@ export default function App() {
 
   const handleHistory = async () => {
     try {
-      const res = await getTransactions(tenant.api_key, wallet.id);
+      const res = await getTransactions(wallet.id);
       show(res);
     } catch (err) {
       showErr(err);
     }
   };
 
+  if (!loggedIn) {
+    return <Auth onLoggedIn={() => setLoggedIn(true)} />;
+  }
+
   return (
     <div style={{ padding: 20, fontFamily: "monospace" }}>
-      <h3>1. Create Tenant</h3>
-      <form onSubmit={handleCreateTenant}>
-        <input name="name" placeholder="Tenant name" required />
-        <button type="submit">Create Tenant</button>
-      </form>
+      <button onClick={handleLogout} style={{ float: "right" }}>
+        Logout
+      </button>
       {tenant && (
         <p>
           Tenant: {tenant.name} | API Key: {tenant.api_key}

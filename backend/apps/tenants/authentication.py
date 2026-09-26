@@ -3,7 +3,14 @@ from .models import Tenant
 
 
 def resolve_tenant(request):
-    """Resolve tenant from X-API-Key or X-Tenant-ID header."""
+    """Resolve tenant from the authenticated user (JWT), falling back to
+    X-API-Key / X-Tenant-ID for service-to-service or test use."""
+    if request.user and request.user.is_authenticated:
+        tenant = getattr(request.user, "tenant", None)
+        if tenant is None:
+            raise AuthenticationFailed("This account has no tenant.")
+        return tenant
+
     api_key = request.headers.get("X-API-Key")
     tenant_id = request.headers.get("X-Tenant-ID")
 
@@ -19,6 +26,4 @@ def resolve_tenant(request):
         except (Tenant.DoesNotExist, ValueError):
             raise AuthenticationFailed("Invalid tenant ID.")
 
-    raise AuthenticationFailed(
-        "Tenant not identified. Provide X-API-Key or X-Tenant-ID header."
-    )
+    raise AuthenticationFailed("Tenant not identified.")

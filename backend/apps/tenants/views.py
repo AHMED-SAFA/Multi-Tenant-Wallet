@@ -1,8 +1,10 @@
 from rest_framework import generics
-from .models import Tenant
+from apps.tenants.mixins import TenantScopedMixin
 from .serializers import TenantSerializer
 
 
-class TenantCreateView(generics.CreateAPIView):
-    queryset = Tenant.objects.all()
+class TenantMeView(TenantScopedMixin, generics.RetrieveAPIView):
     serializer_class = TenantSerializer
+
+    def get_object(self):
+        return self.tenant

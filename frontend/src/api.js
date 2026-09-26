@@ -2,60 +2,46 @@ import axios from "axios";
 
 const API_URL = "http://localhost:8000/api";
 
-export const createTenant = (name) =>
-  axios.post(`${API_URL}/tenants/`, { name });
+const client = axios.create({ baseURL: API_URL });
 
-export const createWallet = (apiKey, owner_name) =>
-  axios.post(
-    `${API_URL}/wallets/`,
-    { owner_name },
-    { headers: { "X-API-Key": apiKey } },
-  );
+client.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access_token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
-export const deposit = (apiKey, wallet_id, amount, idempotency_key) =>
-  axios.post(
-    `${API_URL}/deposit/`,
-    { wallet_id, amount, idempotency_key },
-    { headers: { "X-API-Key": apiKey } },
-  );
+export const register = (data) => client.post("/auth/register/", data);
+export const login = (email, password) =>
+  client.post("/auth/login/", { email, password });
+export const logout = (refresh) => client.post("/auth/logout/", { refresh });
+export const getMe = () => client.get("/tenants/me/");
 
-export const withdraw = (apiKey, wallet_id, amount, idempotency_key) =>
-  axios.post(
-    `${API_URL}/withdraw/`,
-    { wallet_id, amount, idempotency_key },
-    { headers: { "X-API-Key": apiKey } },
-  );
-
+export const createWallet = (owner_name) =>
+  client.post("/wallets/", { owner_name });
+export const deposit = (wallet_id, amount, idempotency_key) =>
+  client.post("/deposit/", { wallet_id, amount, idempotency_key });
+export const withdraw = (wallet_id, amount, idempotency_key) =>
+  client.post("/withdraw/", { wallet_id, amount, idempotency_key });
 export const transfer = (
-  apiKey,
   from_wallet_id,
   to_wallet_id,
   amount,
   idempotency_key,
 ) =>
-  axios.post(
-    `${API_URL}/transfer/`,
-    { from_wallet_id, to_wallet_id, amount, idempotency_key },
-    { headers: { "X-API-Key": apiKey } },
-  );
-
-export const getBalance = (apiKey, wallet_id) =>
-  axios.get(`${API_URL}/wallets/${wallet_id}/balance/`, {
-    headers: { "X-API-Key": apiKey },
+  client.post("/transfer/", {
+    from_wallet_id,
+    to_wallet_id,
+    amount,
+    idempotency_key,
   });
-
-export const getTransactions = (apiKey, wallet_id, page = 1) =>
-  axios.get(`${API_URL}/wallets/${wallet_id}/transactions/?page=${page}`, {
-    headers: { "X-API-Key": apiKey },
-  });
-
-export const downloadStatement = async (apiKey, wallet_id, days) => {
-  const res = await axios.get(
-    `${API_URL}/wallets/${wallet_id}/statement/?days=${days}`,
-    {
-      headers: { "X-API-Key": apiKey },
-      responseType: "blob",
-    },
+export const getBalance = (wallet_id) =>
+  client.get(`/wallets/${wallet_id}/balance/`);
+export const getTransactions = (wallet_id, page = 1) =>
+  client.get(`/wallets/${wallet_id}/transactions/?page=${page}`);
+export const downloadStatement = async (wallet_id, days) => {
+  const res = await client.get(
+    `/wallets/${wallet_id}/statement/?days=${days}`,
+    { responseType: "blob" },
   );
   const url = window.URL.createObjectURL(new Blob([res.data]));
   const link = document.createElement("a");
