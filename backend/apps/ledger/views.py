@@ -17,6 +17,8 @@ from .serializers import (
 
 
 from io import BytesIO
+from datetime import timedelta
+from django.utils import timezone
 from django.http import FileResponse
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -318,9 +320,23 @@ class WalletStatementPDFView(TenantScopedMixin, APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        transactions = Transaction.objects.filter(
-            tenant=self.tenant, wallet=wallet
-        ).order_by("created_at")
+        days = request.query_params.get("days")
+        transactions = Transaction.objects.filter(tenant=self.tenant, wallet=wallet)
+
+        period_label = "All time"
+        if days is not None:
+            try:
+                days = int(days)
+            except ValueError:
+                return Response(
+                    {"detail": "days must be an integer."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            since = timezone.now() - timedelta(days=days)
+            transactions = transactions.filter(created_at__gte=since)
+            period_label = f"Last {days} day(s)"
+
+        transactions = transactions.order_by("created_at")
 
         buffer = BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=A4)
@@ -328,6 +344,7 @@ class WalletStatementPDFView(TenantScopedMixin, APIView):
         elements = [
             Paragraph(f"Wallet Statement — {wallet.owner_name}", styles["Title"]),
             Paragraph(f"Wallet ID: {wallet.id}", styles["Normal"]),
+            Paragraph(f"Period: {period_label}", styles["Normal"]),
             Paragraph(f"Current balance: {wallet.balance}", styles["Normal"]),
             Spacer(1, 16),
         ]
@@ -359,6 +376,5 @@ class WalletStatementPDFView(TenantScopedMixin, APIView):
 
         doc.build(elements)
         buffer.seek(0)
-        return FileResponse(
-            buffer, as_attachment=True, filename=f"statement-{wallet.id}.pdf"
-        )
+        filename = f'statement-{wallet.id}-{days or "all"}d.pdf'
+        return FileResponse(buffer, as_attachment=True, filename=filename)

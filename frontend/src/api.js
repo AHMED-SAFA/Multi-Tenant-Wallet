@@ -49,15 +49,18 @@ export const getTransactions = (apiKey, wallet_id, page = 1) =>
     headers: { "X-API-Key": apiKey },
   });
 
-export const downloadStatement = async (apiKey, wallet_id) => {
-  const res = await axios.get(`${API_URL}/wallets/${wallet_id}/statement/`, {
-    headers: { "X-API-Key": apiKey },
-    responseType: "blob",
-  });
+export const downloadStatement = async (apiKey, wallet_id, days) => {
+  const res = await axios.get(
+    `${API_URL}/wallets/${wallet_id}/statement/?days=${days}`,
+    {
+      headers: { "X-API-Key": apiKey },
+      responseType: "blob",
+    },
+  );
   const url = window.URL.createObjectURL(new Blob([res.data]));
   const link = document.createElement("a");
   link.href = url;
-  link.setAttribute("download", `statement-${wallet_id}.pdf`);
+  link.setAttribute("download", `statement-${wallet_id}-${days}d.pdf`);
   document.body.appendChild(link);
   link.click();
   link.remove();

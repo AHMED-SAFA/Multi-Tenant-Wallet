@@ -41,6 +41,17 @@ export default function App() {
     }
   };
 
+  const handleDownloadStatement = () => {
+    const choice = window.prompt(
+      "Download statement for which period?\n1 = Last 1 day\n2 = Last 6 days\n3 = Last 12 days",
+      "1",
+    );
+    const daysMap = { 1: 1, 2: 6, 3: 12 };
+    const days = daysMap[choice];
+    if (!days) return; // cancelled or invalid input
+    downloadStatement(tenant.api_key, wallet.id, days);
+  };
+
   const handleDeposit = async (e) => {
     e.preventDefault();
     try {
@@ -179,7 +190,7 @@ export default function App() {
           <h3>6. Balance / History</h3>
           <button onClick={handleBalance}>Get Balance</button>
           <button onClick={handleHistory}>Get Transaction History</button>
-          <button onClick={() => downloadStatement(tenant.api_key, wallet.id)}>
+          <button onClick={handleDownloadStatement}>
             Download PDF Statement
           </button>
         </>
