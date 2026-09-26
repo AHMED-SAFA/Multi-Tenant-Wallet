@@ -7,6 +7,7 @@ import {
   transfer,
   getBalance,
   getTransactions,
+  downloadStatement,
 } from "./api";
 
 export default function App() {
@@ -178,6 +179,9 @@ export default function App() {
           <h3>6. Balance / History</h3>
           <button onClick={handleBalance}>Get Balance</button>
           <button onClick={handleHistory}>Get Transaction History</button>
+          <button onClick={() => downloadStatement(tenant.api_key, wallet.id)}>
+            Download PDF Statement
+          </button>
         </>
       )}
 

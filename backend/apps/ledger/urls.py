@@ -5,6 +5,7 @@ from .views import (
     TransferView,
     WalletBalanceView,
     WalletTransactionListView,
+    WalletStatementPDFView,
 )
 
 urlpatterns = [
@@ -20,5 +21,10 @@ urlpatterns = [
         "wallets/<uuid:wallet_id>/transactions/",
         WalletTransactionListView.as_view(),
         name="wallet-transactions",
+    ),
+    path(
+        "wallets/<uuid:wallet_id>/statement/",
+        WalletStatementPDFView.as_view(),
+        name="wallet-statement",
     ),
 ]

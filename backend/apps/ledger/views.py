@@ -15,6 +15,15 @@ from .serializers import (
     TransactionSerializer,
 )
 
+
+from io import BytesIO
+from django.http import FileResponse
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+
+
 class DepositView(TenantScopedMixin, APIView):
     def post(self, request):
         serializer = DepositSerializer(data=request.data)
@@ -298,3 +307,58 @@ class WalletTransactionListView(TenantScopedMixin, generics.ListAPIView):
         # Filtering by tenant here (not just wallet_id) is what blocks
         # cross-tenant history reads even if the wallet UUID is guessed.
         return Transaction.objects.filter(tenant=self.tenant, wallet_id=wallet_id)
+
+
+class WalletStatementPDFView(TenantScopedMixin, APIView):
+    def get(self, request, wallet_id):
+        wallet = Wallet.objects.filter(id=wallet_id, tenant=self.tenant).first()
+        if wallet is None:
+            return Response(
+                {"detail": "Wallet not found for this tenant."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        transactions = Transaction.objects.filter(
+            tenant=self.tenant, wallet=wallet
+        ).order_by("created_at")
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4)
+        styles = getSampleStyleSheet()
+        elements = [
+            Paragraph(f"Wallet Statement — {wallet.owner_name}", styles["Title"]),
+            Paragraph(f"Wallet ID: {wallet.id}", styles["Normal"]),
+            Paragraph(f"Current balance: {wallet.balance}", styles["Normal"]),
+            Spacer(1, 16),
+        ]
+
+        data = [["Date", "Type", "Amount", "Balance After", "Idempotency Key"]]
+        for t in transactions:
+            data.append(
+                [
+                    t.created_at.strftime("%Y-%m-%d %H:%M"),
+                    t.get_type_display(),
+                    str(t.amount),
+                    str(t.balance_after),
+                    t.idempotency_key,
+                ]
+            )
+
+        table = Table(data, repeatRows=1)
+        table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#333333")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("FONTSIZE", (0, 0), (-1, -1), 8),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ]
+            )
+        )
+        elements.append(table)
+
+        doc.build(elements)
+        buffer.seek(0)
+        return FileResponse(
+            buffer, as_attachment=True, filename=f"statement-{wallet.id}.pdf"
+        )

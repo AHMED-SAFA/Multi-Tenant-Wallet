@@ -19,3 +19,24 @@ class Wallet(models.Model):
 
     def __str__(self):
         return f"{self.owner_name} ({self.tenant.name})"
+
+    def recompute_balance(self):
+        """Recalculate balance purely from the ledger — proves the ledger
+        is the source of truth, not the cached `balance` field."""
+        from apps.ledger.models import Transaction
+
+        credits = (
+            Transaction.objects.filter(
+                wallet=self,
+                type__in=[Transaction.Type.DEPOSIT, Transaction.Type.TRANSFER_IN],
+            ).aggregate(total=models.Sum("amount"))["total"]
+            or 0
+        )
+        debits = (
+            Transaction.objects.filter(
+                wallet=self,
+                type__in=[Transaction.Type.WITHDRAW, Transaction.Type.TRANSFER_OUT],
+            ).aggregate(total=models.Sum("amount"))["total"]
+            or 0
+        )
+        return credits - debits
