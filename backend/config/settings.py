@@ -12,15 +12,12 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from decouple import config
 from pathlib import Path
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-cff@zw%2-ntn9q$d_jfp*bts8m6#^=s-c9=+%)cqn!it5qd5i9"
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -102,7 +99,9 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 20,
 }
 
+
 CORS_ALLOW_ALL_ORIGINS = True  # dev only
+CORS_ALLOW_HEADERS = list(default_headers) + ["x-api-key", "x-tenant-id"]
 
 
 # Password validation

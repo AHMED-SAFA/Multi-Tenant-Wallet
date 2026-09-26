@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from .models import Transaction
 
 
 class DepositSerializer(serializers.Serializer):
@@ -23,3 +24,18 @@ class TransferSerializer(serializers.Serializer):
         if data["from_wallet_id"] == data["to_wallet_id"]:
             raise serializers.ValidationError("Cannot transfer to the same wallet.")
         return data
+
+
+class TransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = [
+            "id",
+            "wallet",
+            "type",
+            "amount",
+            "balance_after",
+            "idempotency_key",
+            "related_transfer_id",
+            "created_at",
+        ]

@@ -7,8 +7,13 @@ from rest_framework.views import APIView
 from apps.tenants.mixins import TenantScopedMixin
 from apps.wallets.models import Wallet
 from .models import Transaction
-from .serializers import DepositSerializer, WithdrawSerializer, TransferSerializer
-
+from rest_framework import generics
+from .serializers import (
+    DepositSerializer,
+    WithdrawSerializer,
+    TransferSerializer,
+    TransactionSerializer,
+)
 
 class DepositView(TenantScopedMixin, APIView):
     def post(self, request):
@@ -272,3 +277,24 @@ class TransferView(TenantScopedMixin, APIView):
             },
             status=status.HTTP_201_CREATED,
         )
+
+
+class WalletBalanceView(TenantScopedMixin, APIView):
+    def get(self, request, wallet_id):
+        wallet = Wallet.objects.filter(id=wallet_id, tenant=self.tenant).first()
+        if wallet is None:
+            return Response(
+                {"detail": "Wallet not found for this tenant."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        return Response({"wallet_id": wallet.id, "balance": wallet.balance})
+
+
+class WalletTransactionListView(TenantScopedMixin, generics.ListAPIView):
+    serializer_class = TransactionSerializer
+
+    def get_queryset(self):
+        wallet_id = self.kwargs["wallet_id"]
+        # Filtering by tenant here (not just wallet_id) is what blocks
+        # cross-tenant history reads even if the wallet UUID is guessed.
+        return Transaction.objects.filter(tenant=self.tenant, wallet_id=wallet_id)
