@@ -19,3 +19,10 @@ class WalletDetailView(TenantScopedMixin, generics.RetrieveAPIView):
     def get_queryset(self):
         # Scoped to tenant -> other tenants' wallets 404, never leak existence.
         return Wallet.objects.filter(tenant=self.tenant)
+
+
+class WalletListView(TenantScopedMixin, generics.ListAPIView):
+    serializer_class = WalletSerializer
+
+    def get_queryset(self):
+        return Wallet.objects.filter(tenant=self.tenant).order_by("-created_at")

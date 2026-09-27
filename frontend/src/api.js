@@ -17,7 +17,9 @@ export const logout = (refresh) => client.post("/auth/logout/", { refresh });
 export const getMe = () => client.get("/tenants/me/");
 
 export const createWallet = (owner_name) =>
-  client.post("/wallets/", { owner_name });
+  client.post("/wallets/create/", { owner_name });
+export const listWallets = () => client.get("/wallets/");
+
 export const deposit = (wallet_id, amount, idempotency_key) =>
   client.post("/deposit/", { wallet_id, amount, idempotency_key });
 export const withdraw = (wallet_id, amount, idempotency_key) =>
