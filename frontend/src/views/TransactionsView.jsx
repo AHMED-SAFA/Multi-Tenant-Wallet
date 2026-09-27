@@ -5,6 +5,7 @@ import {
   ArrowsRightLeftIcon,
   ShieldCheckIcon,
   CheckCircleIcon,
+  SparklesIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { formatCurrency, shortenId } from "../api";

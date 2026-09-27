@@ -2,6 +2,7 @@ import {
   Bars3Icon,
   ArrowPathIcon,
   CodeBracketIcon,
+  ShieldCheckIcon,
   WalletIcon,
 } from "@heroicons/react/24/outline";
 import { formatCurrency } from "../api";

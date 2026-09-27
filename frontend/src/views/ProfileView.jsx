@@ -8,7 +8,7 @@ import {
   CheckBadgeIcon,
 } from "@heroicons/react/24/outline";
 
-export default function ProfileView({ profile, onLogout }) {
+export default function ProfileView({ profile, tenant, onLogout }) {
   if (!profile) {
     return (
       <div className="flex h-64 items-center justify-center text-slate-400">
