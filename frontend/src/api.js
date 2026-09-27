@@ -38,6 +38,7 @@ export const getBalance = (wallet_id) =>
   client.get(`/wallets/${wallet_id}/balance/`);
 export const getTransactions = (wallet_id, page = 1) =>
   client.get(`/wallets/${wallet_id}/transactions/?page=${page}`);
+export const getProfile = () => client.get("/auth/me/");
 export const downloadStatement = async (wallet_id, days) => {
   const res = await client.get(
     `/wallets/${wallet_id}/statement/?days=${days}`,

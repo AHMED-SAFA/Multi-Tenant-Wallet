@@ -74,3 +74,10 @@ class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
         self.user = user
         refresh = self.get_token(self.user)
         return {"refresh": str(refresh), "access": str(refresh.access_token)}
+
+
+class ProfileSerializer(serializers.Serializer):
+    email = serializers.EmailField(source="user.email")
+    mobile = serializers.CharField()
+    gender = serializers.CharField()
+    tenant_name = serializers.CharField(source="user.tenant.name")

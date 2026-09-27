@@ -1,11 +1,16 @@
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .serializers import RegisterSerializer, EmailTokenObtainPairSerializer
+from .serializers import (
+    ProfileSerializer,
+    RegisterSerializer,
+    EmailTokenObtainPairSerializer,
+)
 
 
 class RegisterView(generics.CreateAPIView):
@@ -43,3 +48,10 @@ class LogoutView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         return Response(status=status.HTTP_205_RESET_CONTENT)
+
+
+class ProfileView(RetrieveAPIView):
+    serializer_class = ProfileSerializer
+
+    def get_object(self):
+        return self.request.user.profile
