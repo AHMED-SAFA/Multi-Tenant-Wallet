@@ -33,19 +33,19 @@ An enterprise-grade, multi-tenant wallet and double-entry ledger platform design
 
 ## 🛠 Technologies Used
 
-| Domain | Technology / Library | Version | Purpose & Architectural Justification |
-| :--- | :--- | :--- | :--- |
-| **Backend Core** | [Python](https://www.python.org/) | `3.11+` | Primary programming language with strong typing and robust standard library. |
-| **Web Framework** | [Django](https://www.djangoproject.com/) | `6.1.1` | Robust web framework providing ORM, migrations, and security baseline. |
-| **API Framework** | [Django REST Framework](https://www.django-rest-framework.org/) | `3.18.1` | Structured serialization, request validation, exception handling, and generic API views. |
-| **Authentication** | [SimpleJWT](https://django-rest-framework-simplejwt.readthedocs.io/) | `5.5.1` | Stateless JWT token issuance (`access`/`refresh`), token rotation, and blacklisting on logout. |
-| **Database** | [PostgreSQL](https://www.postgresql.org/) | `15+` | ACID-compliant relational DB with `select_for_update()` row locking and custom constraints. |
-| **Report Generation**| [ReportLab](https://www.reportlab.com/) | `5.0.1` | High-fidelity server-side dynamic PDF generation for periodic wallet audit statements. |
-| **Frontend UI** | [React](https://react.dev/) | `19.2.8` | Component-driven UI architecture for tenant dashboard and wallet operations. |
-| **Build Tool** | [Vite](https://vite.dev/) | `8.3.0` | High-performance frontend bundler with instant HMR and optimized production builds. |
-| **Styling** | [Tailwind CSS](https://tailwindcss.com/) | `4.3.3` | Modern utility-first CSS framework with custom responsive UI components. |
-| **Routing** | [React Router](https://reactrouter.com/) | `7.18.4` | Client-side routing with route protection and authentication guards. |
-| **HTTP Client** | [Axios](https://axios-http.com/) | `1.20.0` | Promise-based HTTP client configured with automated JWT injection and refresh interceptors. |
+| Domain                | Technology / Library                                                 | Version  | Purpose & Architectural Justification                                                          |
+| :-------------------- | :------------------------------------------------------------------- | :------- | :--------------------------------------------------------------------------------------------- |
+| **Backend Core**      | [Python](https://www.python.org/)                                    | `3.11+`  | Primary programming language with strong typing and robust standard library.                   |
+| **Web Framework**     | [Django](https://www.djangoproject.com/)                             | `6.1.1`  | Robust web framework providing ORM, migrations, and security baseline.                         |
+| **API Framework**     | [Django REST Framework](https://www.django-rest-framework.org/)      | `3.18.1` | Structured serialization, request validation, exception handling, and generic API views.       |
+| **Authentication**    | [SimpleJWT](https://django-rest-framework-simplejwt.readthedocs.io/) | `5.5.1`  | Stateless JWT token issuance (`access`/`refresh`), token rotation, and blacklisting on logout. |
+| **Database**          | [PostgreSQL](https://www.postgresql.org/)                            | `15+`    | ACID-compliant relational DB with `select_for_update()` row locking and custom constraints.    |
+| **Report Generation** | [ReportLab](https://www.reportlab.com/)                              | `5.0.1`  | High-fidelity server-side dynamic PDF generation for periodic wallet audit statements.         |
+| **Frontend UI**       | [React](https://react.dev/)                                          | `19.2.8` | Component-driven UI architecture for tenant dashboard and wallet operations.                   |
+| **Build Tool**        | [Vite](https://vite.dev/)                                            | `8.3.0`  | High-performance frontend bundler with instant HMR and optimized production builds.            |
+| **Styling**           | [Tailwind CSS](https://tailwindcss.com/)                             | `4.3.3`  | Modern utility-first CSS framework with custom responsive UI components.                       |
+| **Routing**           | [React Router](https://reactrouter.com/)                             | `7.18.4` | Client-side routing with route protection and authentication guards.                           |
+| **HTTP Client**       | [Axios](https://axios-http.com/)                                     | `1.20.0` | Promise-based HTTP client configured with automated JWT injection and refresh interceptors.    |
 
 ---
 
@@ -209,7 +209,7 @@ sequenceDiagram
 
     Client->>API: POST /api/transfer/ (X-API-Key or Bearer Token + Idempotency-Key)
     API->>API: Validate input (amount > 0, from != to)
-    
+
     API->>Ledger: Check for existing idempotency_key with type=TRANSFER_OUT
     alt Key already executed (Replay)
         Ledger-->>API: Return existing Transaction record
@@ -218,7 +218,7 @@ sequenceDiagram
         API->>API: Sort wallet IDs: id_a, id_b = sorted([from_id, to_id])
         API->>DB: BEGIN transaction.atomic()
         API->>Wallet: SELECT FOR UPDATE WHERE id IN (id_a, id_b) AND tenant = current_tenant
-        
+
         alt Less than 2 wallets found (cross-tenant or non-existent)
             Wallet-->>API: 0 or 1 wallet returned
             API->>DB: ROLLBACK
@@ -247,63 +247,71 @@ sequenceDiagram
 > Place your captured application screenshots inside the `screenshots/` directory matching the filenames below.
 
 ### 1. Dashboard Overview & Tenant Context
+
 ![Dashboard Overview](screenshots/dashboard_overview.png)
-*Real-time tenant balance rollup, active wallet counters, recent ledger transactions, and quick action controls.*
+_Real-time tenant balance rollup, active wallet counters, recent ledger transactions, and quick action controls._
 
 ---
 
 ### 2. Multi-Tenant Onboarding & API Key Generation
+
 ![Tenant Registration](screenshots/tenant_registration.png)
-*Onboarding flow with automatic tenant entity provisioning, JWT token emission, and dedicated API key generation.*
+_Onboarding flow with automatic tenant entity provisioning, JWT token emission, and dedicated API key generation._
 
 ---
 
 ### 3. Wallet Creation & Balance Tracking
+
 ![Wallet Management](screenshots/wallet_management.png)
-*Creation of customer wallets under the isolated tenant namespace, displaying UUIDs, owner details, and real-time ledger balances.*
+_Creation of customer wallets under the isolated tenant namespace, displaying UUIDs, owner details, and real-time ledger balances._
 
 ---
 
 ### 4. Idempotent Deposit & Withdrawal Operations
+
 ![Deposit & Withdrawal](screenshots/deposit_withdraw.png)
-*Executing deposit and withdrawal flows with idempotency key headers, verifying instant ledger reconciliation and double-spend prevention.*
+_Executing deposit and withdrawal flows with idempotency key headers, verifying instant ledger reconciliation and double-spend prevention._
 
 ---
 
 ### 5. Atomic Peer-to-Peer Wallet Transfer
+
 ![Atomic Wallet Transfer](screenshots/wallet_transfer.png)
-*Atomic fund transfer between two wallets of the same organization, showing balanced debit and credit entries with shared transfer correlation IDs.*
+_Atomic fund transfer between two wallets of the same organization, showing balanced debit and credit entries with shared transfer correlation IDs._
 
 ---
 
 ### 6. Cross-Tenant Protection & Access Denied Proof
+
 ![Cross-Tenant Isolation](screenshots/cross_tenant_rejection.png)
-*Verification that attempts to read, transfer to, or withdraw from another tenant's wallet return an obfuscated 404 response without data leakage.*
+_Verification that attempts to read, transfer to, or withdraw from another tenant's wallet return an obfuscated 404 response without data leakage._
 
 ---
 
 ### 7. Immutable Ledger & Paginated Transaction Log
+
 ![Ledger Audit Trail](screenshots/ledger_history.png)
-*Detailed transaction audit trail with pagination, type badges, idempotency keys, timestamps, and balance-after verification.*
+_Detailed transaction audit trail with pagination, type badges, idempotency keys, timestamps, and balance-after verification._
 
 ---
 
 ### 8. Downloadable PDF Audit Statement
+
 ![PDF Statement](screenshots/pdf_statement.png)
-*Exported formal PDF account statement dynamically rendered with ReportLab, featuring transaction breakdown and period filters.*
+_Exported formal PDF account statement dynamically rendered with ReportLab, featuring transaction breakdown and period filters._
 
 ---
 
 ## ⚡ Feature Highlights & Edge Case Handling
 
-| Challenge / Requirement | Threat / Risk | Platform Solution & Implementation |
-| :--- | :--- | :--- |
-| **Race Conditions** | Concurrent withdrawals creating negative balances. | `select_for_update()` acquires exclusive pessimistic row locks. Combined with DB `CheckConstraint(balance__gte=0)`. |
-| **Deadlocks** | Wallet A $\to$ Wallet B while Wallet B $\to$ Wallet A. | Lock keys are deterministically sorted (`sorted([id_a, id_b])`) before query execution, ensuring identical lock hierarchy. |
-| **Network Retry Duplication** | Retried POST requests causing double debit/credit. | Unique composite DB constraint `(tenant, idempotency_key, type)` with automatic replay logic and `IntegrityError` safety catches. |
-| **Cross-Tenant Breach** | Malicious actor guessing UUIDs of another tenant. | Every query enforces `filter(tenant=self.tenant)`. Cross-tenant queries return uniform `404 Not Found` without revealing resource existence. |
-| **Ledger Drift** | Balance column drifting away from transactions. | Built-in `wallet.recompute_balance()` utility verifies that `balance == sum(credits) - sum(debits)`. |
-| **Floating Point Drift** | Inexact fractional cent representation. | All amounts stored in PostgreSQL `NUMERIC(18, 2)` mapped through Python `Decimal`. |
+| Challenge / Requirement       | Threat / Risk                                          | Platform Solution & Implementation                                                                                                           |
+| :---------------------------- | :----------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Race Conditions**           | Concurrent withdrawals creating negative balances.     | `select_for_update()` acquires exclusive pessimistic row locks. Combined with DB `CheckConstraint(balance__gte=0)`.                          |
+| **Deadlocks**                 | Wallet A $\to$ Wallet B while Wallet B $\to$ Wallet A. | Lock keys are deterministically sorted (`sorted([id_a, id_b])`) before query execution, ensuring identical lock hierarchy.                   |
+| **Network Retry Duplication** | Retried POST requests causing double debit/credit.     | Unique composite DB constraint `(tenant, idempotency_key, type)` with automatic replay logic and `IntegrityError` safety catches.            |
+| **Cross-Tenant Breach**       | Malicious actor guessing UUIDs of another tenant.      | Every query enforces `filter(tenant=self.tenant)`. Cross-tenant queries return uniform `404 Not Found` without revealing resource existence. |
+| **Ledger Drift**              | Balance column drifting away from transactions.        | Built-in `wallet.recompute_balance()` utility verifies that `balance == sum(credits) - sum(debits)`.                                         |
+| **Floating Point Drift**      | Inexact fractional cent representation.                | All amounts stored in PostgreSQL `NUMERIC(18, 2)` mapped through Python `Decimal`.                                                           |
 
 ---
 
@@ -312,10 +320,13 @@ sequenceDiagram
 ### Authentication & Tenant Scoping Headers
 
 Authenticated requests require either a JWT Bearer token or direct Tenant Headers:
+
 ```http
 Authorization: Bearer <jwt_access_token>
 ```
-*or for direct service-to-service calls:*
+
+_or for direct service-to-service calls:_
+
 ```http
 X-API-Key: <tenant_api_key>
 # or
@@ -327,6 +338,7 @@ X-Tenant-ID: <tenant_uuid>
 ### Endpoints Matrix
 
 #### 1. Authentication & Onboarding
+
 - `POST /api/auth/register/` — Register user, user profile, and tenant organization.
 - `POST /api/auth/login/` — Authenticate via email & password, obtain JWT pair.
 - `POST /api/auth/login/refresh/` — Refresh access token.
@@ -335,12 +347,14 @@ X-Tenant-ID: <tenant_uuid>
 - `GET /api/tenants/me/` — Retrieve tenant metadata, API key, and creation date.
 
 #### 2. Wallet Operations
+
 - `GET /api/wallets/` — List all wallets belonging to the authenticated tenant.
 - `POST /api/wallets/create/` — Create a new customer wallet for the tenant.
 - `GET /api/wallets/<uuid:wallet_id>/` — Inspect specific wallet details and balance.
 - `GET /api/wallets/<uuid:wallet_id>/balance/` — Quick balance query.
 
 #### 3. Ledger & Money Movements
+
 - `POST /api/deposit/` — Deposit funds into a wallet.
 - `POST /api/withdraw/` — Withdraw funds (safely rejected if insufficient balance).
 - `POST /api/transfer/` — Atomic transfer between two wallets belonging to the same tenant.
@@ -352,6 +366,7 @@ X-Tenant-ID: <tenant_uuid>
 ### Sample Requests & Responses
 
 #### Transfer Funds (`POST /api/transfer/`)
+
 ```bash
 curl -X POST http://localhost:8000/api/transfer/ \
   -H "Authorization: Bearer <JWT_TOKEN>" \
@@ -363,7 +378,9 @@ curl -X POST http://localhost:8000/api/transfer/ \
     "idempotency_key": "xfer-20260327-889"
   }'
 ```
+
 **Response (`201 Created`):**
+
 ```json
 {
   "transfer_id": "e44d5786-9a2f-4809-9bca-4b0e7da3e2bc",
@@ -375,7 +392,9 @@ curl -X POST http://localhost:8000/api/transfer/ \
 ```
 
 #### Idempotent Replay Response (`200 OK`)
+
 When re-submitting the same payload with an identical `idempotency_key`:
+
 ```json
 {
   "transfer_id": "e44d5786-9a2f-4809-9bca-4b0e7da3e2bc",
@@ -418,9 +437,55 @@ Lookup Tenant via OneToOne        Lookup Tenant via Tenant Model
 ## 🛠 Setup & Installation Guide
 
 ### Prerequisites
+
 - Python 3.11+
 - Node.js 18+ & npm
 - PostgreSQL 14+ (or SQLite for quick test runs)
+
+### Docker Setup (Windows / PowerShell)
+
+Make sure Docker Desktop is running. Open PowerShell in the project root (`wallet-platform`) and create a `.env` file with the database settings used by Docker Compose:
+
+```powershell
+@'
+DB_NAME=wallet_db
+DB_USER=wallet_user
+DB_PASSWORD=change_this_local_password
+DB_HOST=db
+DB_PORT=5432
+'@ | Set-Content .env
+```
+
+Replace `change_this_local_password` with a local password of your choice. If you already have a root `.env` file, keep it and make sure it contains these values instead of overwriting it.
+
+Build and start the database, API, and frontend:
+
+```powershell
+docker compose up --build
+```
+
+The first startup builds the images, waits for PostgreSQL, and runs Django migrations automatically. Open the app at `http://localhost:5173/`; the API is at `http://localhost:8000/`.
+
+In another PowerShell window, create a Django admin user if needed:
+
+```powershell
+docker compose exec backend python manage.py createsuperuser
+```
+
+Useful commands:
+
+```powershell
+# Follow service logs
+docker compose logs -f
+
+# Stop the services and keep database data
+docker compose down
+
+# Start the services again
+docker compose up
+```
+
+PostgreSQL data is stored in a Docker volume and is preserved by `docker compose down`. Avoid `docker compose down -v` unless you intend to delete the database data.
 
 ---
 
@@ -460,6 +525,7 @@ python manage.py createsuperuser
 # 7. Start the backend development server
 python manage.py runserver
 ```
+
 The Django REST API will be available at `http://127.0.0.1:8000/`.
 
 ---
@@ -476,6 +542,7 @@ npm i
 # 3. Run the development server
 npm run dev
 ```
+
 The React Dashboard will be accessible at `http://localhost:5173/`.
 
 ---
@@ -483,15 +550,15 @@ The React Dashboard will be accessible at `http://localhost:5173/`.
 ## ⚖️ Design Decisions, Assumptions & Trade-offs
 
 1. **Cached Balance vs. Pure Recomputation**:
-   - *Decision*: Maintain an indexed `balance` column on `Wallet` while treating the immutable `Transaction` ledger as ground truth.
-   - *Rationale*: Recomputing balance on every read by summing millions of ledger entries would cause unacceptable $O(N)$ database query latency. Keeping a cached balance updated within the same atomic transaction provides $O(1)$ read performance while DB constraints guarantee integrity.
+   - _Decision_: Maintain an indexed `balance` column on `Wallet` while treating the immutable `Transaction` ledger as ground truth.
+   - _Rationale_: Recomputing balance on every read by summing millions of ledger entries would cause unacceptable $O(N)$ database query latency. Keeping a cached balance updated within the same atomic transaction provides $O(1)$ read performance while DB constraints guarantee integrity.
 2. **Deterministic Lock Ordering**:
-   - *Decision*: Sort wallet IDs alphabetically/numerically before locking.
+   - _Decision_: Sort wallet IDs alphabetically/numerically before locking.
 3. **Idempotency Strategy**:
-   - *Decision*: Store idempotency keys directly in the `Transaction` ledger table rather than an in-memory Redis cache.
-   - *Rationale*: Financial auditability requires durable idempotency history. If an application server crashes, database persistence ensures idempotency guarantees remain fully intact.
+   - _Decision_: Store idempotency keys directly in the `Transaction` ledger table rather than an in-memory Redis cache.
+   - _Rationale_: Financial auditability requires durable idempotency history. If an application server crashes, database persistence ensures idempotency guarantees remain fully intact.
 4. **Decimal Precision**:
-   - *Decision*: Use `DecimalField(max_digits=18, decimal_places=2)`.
-   - *Rationale*: Eliminates floating point rounding errors while comfortably supporting large enterprise balances up to quadrillions.
+   - _Decision_: Use `DecimalField(max_digits=18, decimal_places=2)`.
+   - _Rationale_: Eliminates floating point rounding errors while comfortably supporting large enterprise balances up to quadrillions.
 
 ---
