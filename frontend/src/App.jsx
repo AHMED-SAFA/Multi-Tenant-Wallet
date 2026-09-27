@@ -1,68 +1,96 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   createWallet,
   listWallets,
   deposit,
   withdraw,
   transfer,
-  getBalance,
-  getTransactions,
-  downloadStatement,
   getMe,
   getProfile,
   logout as apiLogout,
+  parseApiError,
+  formatCurrency,
 } from "./api";
-import Auth from "./Auth";
-import Sidebar from "./Sidebar";
+
+// Layout & UI components
+import Sidebar from "./components/Sidebar";
+import Topbar from "./components/Topbar";
+import Toast from "./components/ui/Toast";
+import ApiDrawer from "./components/ui/ApiDrawer";
+
+// Views
+import AuthView from "./views/AuthView";
+import WalletsView from "./views/WalletsView";
+import TransactionsView from "./views/TransactionsView";
+import HistoryView from "./views/HistoryView";
+import ProfileView from "./views/ProfileView";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(
-    !!localStorage.getItem("access_token"),
+    !!localStorage.getItem("access_token")
   );
   const [tenant, setTenant] = useState(null);
   const [profile, setProfile] = useState(null);
   const [wallets, setWallets] = useState([]);
-  const [txWalletId, setTxWalletId] = useState("");
-  const [histWalletId, setHistWalletId] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Active view & cross-view navigation targets
   const [active, setActive] = useState("wallet");
+  const [txInitialTab, setTxInitialTab] = useState("deposit");
+  const [txInitialWalletId, setTxInitialWalletId] = useState("");
+  const [historyWalletId, setHistoryWalletId] = useState("");
+
+  // API Console & Toast Notifications
   const [log, setLog] = useState("");
+  const [isApiDrawerOpen, setIsApiDrawerOpen] = useState(false);
+  const [toasts, setToasts] = useState([]);
+
+  // Theme & Mobile Navigation
   const [darkMode, setDarkMode] = useState(
-    localStorage.getItem("dark") === "true",
+    localStorage.getItem("dark") === "true"
   );
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
     localStorage.setItem("dark", darkMode);
   }, [darkMode]);
 
-  const refreshWallets = () => {
-    listWallets()
-      .then((res) => {
-        const data = res.data.results ?? res.data; // handles paginated or plain list
-        setWallets(data);
-      })
-      .catch(() => {});
-  };
+  const addToast = useCallback((type, title, message) => {
+    const id = Date.now() + Math.random().toString(36).slice(2, 6);
+    setToasts((prev) => [...prev, { id, type, title, message }]);
+  }, []);
 
-  useEffect(() => {
-    if (loggedIn) {
-      getMe()
-        .then((res) => setTenant(res.data))
-        .catch(() => handleLogout());
-      getProfile()
-        .then((res) => setProfile(res.data))
-        .catch(() => {});
-      refreshWallets();
+  const dismissToast = useCallback((id) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const recordApiLog = useCallback((data) => {
+    try {
+      setLog(JSON.stringify(data, null, 2));
+    } catch (_) {
+      setLog(String(data));
     }
-  }, [loggedIn]);
+  }, []);
 
-  const show = (res) => setLog(JSON.stringify(res.data, null, 2));
-  const showErr = (err) =>
-    setLog(JSON.stringify(err.response?.data ?? err.message, null, 2));
+  const refreshWallets = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await listWallets();
+      const data = res.data.results ?? res.data;
+      setWallets(Array.isArray(data) ? data : []);
+      recordApiLog(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [recordApiLog]);
 
   const handleLogout = async () => {
     try {
-      await apiLogout(localStorage.getItem("refresh_token"));
+      const refresh = localStorage.getItem("refresh_token");
+      if (refresh) await apiLogout(refresh);
     } catch (_) {}
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
@@ -70,300 +98,199 @@ export default function App() {
     setProfile(null);
     setWallets([]);
     setLoggedIn(false);
+    addToast("info", "Signed Out", "You have been logged out of the tenant realm.");
   };
 
-  const handleCreateWallet = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await createWallet(e.target.owner.value);
-      show(res);
-      e.target.reset();
+  useEffect(() => {
+    if (loggedIn) {
+      getMe()
+        .then((res) => setTenant(res.data))
+        .catch(() => handleLogout());
+
+      getProfile()
+        .then((res) => setProfile(res.data))
+        .catch(() => {});
+
       refreshWallets();
-    } catch (err) {
-      showErr(err);
     }
-  };
+  }, [loggedIn, refreshWallets]);
 
-  const handleDeposit = async (e) => {
-    e.preventDefault();
-    if (!txWalletId) return setLog("Select a wallet first.");
+  // Wallet operations handlers
+  const handleCreateWallet = async (ownerName) => {
     try {
-      show(
-        await deposit(txWalletId, e.target.amount.value, crypto.randomUUID()),
+      const res = await createWallet(ownerName);
+      recordApiLog(res.data);
+      addToast(
+        "success",
+        "Wallet Provisioned",
+        `Created wallet account for "${ownerName}" successfully.`
       );
-      refreshWallets();
+      await refreshWallets();
+      return res;
     } catch (err) {
-      showErr(err);
+      const msg = parseApiError(err);
+      recordApiLog(err.response?.data ?? err.message);
+      addToast("error", "Failed to Create Wallet", msg);
+      throw err;
     }
   };
 
-  const handleWithdraw = async (e) => {
-    e.preventDefault();
-    if (!txWalletId) return setLog("Select a wallet first.");
+  const handleDeposit = async (walletId, amount, idempotencyKey) => {
     try {
-      show(
-        await withdraw(txWalletId, e.target.amount.value, crypto.randomUUID()),
+      const res = await deposit(walletId, amount, idempotencyKey);
+      recordApiLog(res.data);
+      addToast(
+        "success",
+        "Deposit Confirmed",
+        `Successfully credited ${formatCurrency(amount)} to wallet.`
       );
-      refreshWallets();
+      await refreshWallets();
+      return res;
     } catch (err) {
-      showErr(err);
+      const msg = parseApiError(err);
+      recordApiLog(err.response?.data ?? err.message);
+      addToast("error", "Deposit Failed", msg);
+      throw err;
     }
   };
 
-  const handleTransfer = async (e) => {
-    e.preventDefault();
-    if (!txWalletId) return setLog("Select a source wallet first.");
+  const handleWithdraw = async (walletId, amount, idempotencyKey) => {
     try {
-      show(
-        await transfer(
-          txWalletId,
-          e.target.to_wallet_id.value,
-          e.target.amount.value,
-          crypto.randomUUID(),
-        ),
+      const res = await withdraw(walletId, amount, idempotencyKey);
+      recordApiLog(res.data);
+      addToast(
+        "success",
+        "Withdrawal Confirmed",
+        `Successfully debited ${formatCurrency(amount)} from wallet.`
       );
-      refreshWallets();
+      await refreshWallets();
+      return res;
     } catch (err) {
-      showErr(err);
+      const msg = parseApiError(err);
+      recordApiLog(err.response?.data ?? err.message);
+      addToast("error", "Withdrawal Failed", msg);
+      throw err;
     }
   };
 
-  const handleBalance = async () => {
-    if (!histWalletId) return setLog("Select a wallet first.");
+  const handleTransfer = async (fromWalletId, toWalletId, amount, idempotencyKey) => {
     try {
-      show(await getBalance(histWalletId));
+      const res = await transfer(fromWalletId, toWalletId, amount, idempotencyKey);
+      recordApiLog(res.data);
+      addToast(
+        "success",
+        "Transfer Completed",
+        `Transferred ${formatCurrency(amount)} across tenant wallets with atomic lock.`
+      );
+      await refreshWallets();
+      return res;
     } catch (err) {
-      showErr(err);
+      const msg = parseApiError(err);
+      recordApiLog(err.response?.data ?? err.message);
+      addToast("error", "Transfer Failed", msg);
+      throw err;
     }
   };
 
-  const handleHistory = async () => {
-    if (!histWalletId) return setLog("Select a wallet first.");
-    try {
-      show(await getTransactions(histWalletId));
-    } catch (err) {
-      showErr(err);
-    }
+  // Quick navigation helpers from Wallets grid cards
+  const navigateToTx = (action, walletId) => {
+    setTxInitialTab(action);
+    setTxInitialWalletId(walletId);
+    setActive("transactions");
   };
 
-  const handleDownloadStatement = () => {
-    if (!histWalletId) return setLog("Select a wallet first.");
-    const choice = window.prompt(
-      "Statement period?\n1 = Last 1 day\n2 = Last 6 days\n3 = Last 12 days",
-      "1",
+  const navigateToHistory = (walletId) => {
+    setHistoryWalletId(walletId);
+    setActive("history");
+  };
+
+  if (!loggedIn) {
+    return (
+      <>
+        <AuthView onLoggedIn={() => setLoggedIn(true)} />
+        <Toast toasts={toasts} onDismiss={dismissToast} />
+      </>
     );
-    const daysMap = { 1: 1, 2: 6, 3: 12 };
-    const days = daysMap[choice];
-    if (!days) return;
-    downloadStatement(histWalletId, days);
-  };
-
-  if (!loggedIn) return <Auth onLoggedIn={() => setLoggedIn(true)} />;
-
-  const walletSelect = (value, onChange) => (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="border rounded px-2 py-1 dark:bg-gray-800 dark:border-gray-700"
-    >
-      <option value="">Select wallet</option>
-      {wallets.map((w) => (
-        <option key={w.id} value={w.id}>
-          {w.owner_name} — {w.id}
-        </option>
-      ))}
-    </select>
-  );
+  }
 
   return (
-    <div className="flex min-h-screen bg-white dark:bg-gray-950 dark:text-white">
+    <div className="flex min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors">
+      {/* Sleek Enterprise Sidebar */}
       <Sidebar
         active={active}
         onNavigate={setActive}
         onLogout={handleLogout}
         profile={profile}
+        walletCount={wallets.length}
         darkMode={darkMode}
         onToggleDark={() => setDarkMode((d) => !d)}
+        isMobileOpen={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
       />
 
-      <main className="flex-1 p-6">
-        {active === "wallet" && (
-          <section>
-            <h3 className="mb-2 text-lg font-semibold">Your Wallets</h3>
-            {wallets.length === 0 && (
-              <p className="mb-4 text-sm opacity-70">No wallets yet.</p>
-            )}
-            <ul className="mb-4 space-y-1 text-sm">
-              {wallets.map((w) => (
-                <li
-                  key={w.id}
-                  className="rounded border p-2 dark:border-gray-700"
-                >
-                  <strong>{w.owner_name}</strong> — balance: {w.balance}
-                  <div className="text-xs opacity-60">ID: {w.id}</div>
-                </li>
-              ))}
-            </ul>
+      {/* Main Content Area */}
+      <div className="flex flex-1 flex-col min-w-0">
+        <Topbar
+          active={active}
+          wallets={wallets}
+          onRefresh={refreshWallets}
+          isRefreshing={isRefreshing}
+          onOpenApiDrawer={() => setIsApiDrawerOpen(true)}
+          hasLogs={!!log}
+          onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
+        />
 
-            <h3 className="mb-2 text-lg font-semibold">Create New Wallet</h3>
-            <form onSubmit={handleCreateWallet} className="flex gap-2">
-              <input
-                name="owner"
-                placeholder="Wallet owner"
-                required
-                className="border rounded px-2 py-1 dark:bg-gray-800 dark:border-gray-700"
-              />
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-3 py-1 rounded"
-              >
-                Create
-              </button>
-            </form>
-          </section>
-        )}
+        <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
+          {active === "wallet" && (
+            <WalletsView
+              wallets={wallets}
+              onCreateWallet={handleCreateWallet}
+              onNavigateToTx={navigateToTx}
+              onNavigateToHistory={navigateToHistory}
+              profile={profile}
+            />
+          )}
 
-        {active === "transactions" && (
-          <section className="space-y-6">
-            <div>
-              <label className="mb-1 block text-sm font-medium">Wallet</label>
-              {walletSelect(txWalletId, setTxWalletId)}
-            </div>
+          {active === "transactions" && (
+            <TransactionsView
+              wallets={wallets}
+              initialTab={txInitialTab}
+              initialWalletId={txInitialWalletId}
+              onDeposit={handleDeposit}
+              onWithdraw={handleWithdraw}
+              onTransfer={handleTransfer}
+              onNavigateToHistory={navigateToHistory}
+            />
+          )}
 
-            <div>
-              <h3 className="mb-2 text-lg font-semibold">Deposit</h3>
-              <form onSubmit={handleDeposit} className="flex gap-2">
-                <input
-                  name="amount"
-                  type="number"
-                  step="0.01"
-                  placeholder="Amount"
-                  required
-                  className="border rounded px-2 py-1 dark:bg-gray-800 dark:border-gray-700"
-                />
-                <button
-                  type="submit"
-                  className="bg-green-600 text-white px-3 py-1 rounded"
-                >
-                  Deposit
-                </button>
-              </form>
-            </div>
-            <div>
-              <h3 className="mb-2 text-lg font-semibold">Withdraw</h3>
-              <form onSubmit={handleWithdraw} className="flex gap-2">
-                <input
-                  name="amount"
-                  type="number"
-                  step="0.01"
-                  placeholder="Amount"
-                  required
-                  className="border rounded px-2 py-1 dark:bg-gray-800 dark:border-gray-700"
-                />
-                <button
-                  type="submit"
-                  className="bg-red-600 text-white px-3 py-1 rounded"
-                >
-                  Withdraw
-                </button>
-              </form>
-            </div>
-            <div>
-              <h3 className="mb-2 text-lg font-semibold">
-                Transfer (from wallet above)
-              </h3>
-              <form onSubmit={handleTransfer} className="flex gap-2">
-                <select
-                  name="to_wallet_id"
-                  required
-                  className="border rounded px-2 py-1 dark:bg-gray-800 dark:border-gray-700"
-                >
-                  <option value="">Destination wallet</option>
-                  {wallets
-                    .filter((w) => w.id !== txWalletId)
-                    .map((w) => (
-                      <option key={w.id} value={w.id}>
-                        {w.owner_name} — {w.id}
-                      </option>
-                    ))}
-                </select>
-                <input
-                  name="amount"
-                  type="number"
-                  step="0.01"
-                  placeholder="Amount"
-                  required
-                  className="border rounded px-2 py-1 dark:bg-gray-800 dark:border-gray-700"
-                />
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white px-3 py-1 rounded"
-                >
-                  Transfer
-                </button>
-              </form>
-            </div>
-          </section>
-        )}
+          {active === "history" && (
+            <HistoryView
+              wallets={wallets}
+              initialWalletId={historyWalletId}
+              onShowApiLog={(res) => recordApiLog(res.data)}
+            />
+          )}
 
-        {active === "history" && (
-          <section className="space-y-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium">Wallet</label>
-              {walletSelect(histWalletId, setHistWalletId)}
-            </div>
-            <div className="space-x-2">
-              <button
-                onClick={handleBalance}
-                className="bg-gray-700 text-white px-3 py-1 rounded"
-              >
-                Get Balance
-              </button>
-              <button
-                onClick={handleHistory}
-                className="bg-gray-700 text-white px-3 py-1 rounded"
-              >
-                Transaction History
-              </button>
-              <button
-                onClick={handleDownloadStatement}
-                className="bg-gray-700 text-white px-3 py-1 rounded"
-              >
-                Download PDF Statement
-              </button>
-            </div>
-          </section>
-        )}
+          {active === "profile" && (
+            <ProfileView
+              profile={profile}
+              tenant={tenant}
+              onLogout={handleLogout}
+            />
+          )}
+        </main>
+      </div>
 
-        {active === "profile" && (
-          <section>
-            <h3 className="mb-2 text-lg font-semibold">Profile</h3>
-            {profile ? (
-              <ul className="space-y-1 text-sm">
-                <li>
-                  <strong>Email:</strong> {profile.email}
-                </li>
-                <li>
-                  <strong>Mobile:</strong> {profile.mobile}
-                </li>
-                <li>
-                  <strong>Gender:</strong> {profile.gender}
-                </li>
-                <li>
-                  <strong>Tenant:</strong> {profile.tenant_name}
-                </li>
-              </ul>
-            ) : (
-              <p>Loading…</p>
-            )}
-          </section>
-        )}
+      {/* Global Notifications Toast System */}
+      <Toast toasts={toasts} onDismiss={dismissToast} />
 
-        <h4 className="mt-8 mb-1 font-semibold">Response</h4>
-        <pre className="bg-gray-100 dark:bg-gray-800 p-3 rounded text-xs overflow-auto">
-          {log}
-        </pre>
-      </main>
+      {/* Live API Inspector Drawer */}
+      <ApiDrawer
+        isOpen={isApiDrawerOpen}
+        onClose={() => setIsApiDrawerOpen(false)}
+        log={log}
+        onClear={() => setLog("")}
+      />
     </div>
   );
 }

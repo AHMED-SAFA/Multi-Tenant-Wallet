@@ -54,3 +54,59 @@ export const downloadStatement = async (wallet_id, days) => {
   link.click();
   link.remove();
 };
+
+export const formatCurrency = (val) => {
+  const num = Number(val);
+  if (isNaN(num)) return "$0.00";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(num);
+};
+
+export const shortenId = (id, chars = 6) => {
+  if (!id || typeof id !== "string") return "";
+  if (id.length <= chars * 2 + 3) return id;
+  return `${id.slice(0, chars)}...${id.slice(-chars)}`;
+};
+
+export const formatDateTime = (dateString) => {
+  if (!dateString) return "—";
+  try {
+    const d = new Date(dateString);
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(d);
+  } catch (_) {
+    return dateString;
+  }
+};
+
+export const parseApiError = (err) => {
+  if (!err) return "An unexpected error occurred.";
+  if (err.response?.data) {
+    const data = err.response.data;
+    if (typeof data === "string") return data;
+    if (data.detail) return data.detail;
+    if (data.message) return data.message;
+    if (data.error) return data.error;
+    // If it's an object with field errors (e.g. { amount: ["This field is required."] })
+    const keys = Object.keys(data);
+    if (keys.length > 0) {
+      const messages = keys.map((key) => {
+        const val = data[key];
+        return `${key}: ${Array.isArray(val) ? val.join(" ") : String(val)}`;
+      });
+      return messages.join(" | ");
+    }
+    return JSON.stringify(data);
+  }
+  return err.message || "Network error. Please try again.";
+};
+
