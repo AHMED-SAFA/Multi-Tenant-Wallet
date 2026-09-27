@@ -28,7 +28,7 @@ export default function WalletsView({
 
   const totalBalance = wallets.reduce(
     (acc, w) => acc + (parseFloat(w.balance) || 0),
-    0
+    0,
   );
 
   const handleCopy = (id) => {
@@ -68,7 +68,9 @@ export default function WalletsView({
             {formatCurrency(totalBalance)}
           </div>
           <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400">Real-time</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+              Real-time
+            </span>
             <span>across all tenant accounts</span>
           </div>
         </div>
@@ -95,7 +97,7 @@ export default function WalletsView({
         <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800/80 dark:bg-slate-900 transition-colors sm:col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              Isolated Workspace
+              Workspace
             </span>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400">
               <BuildingOffice2Icon className="h-5 w-5" />
@@ -106,7 +108,9 @@ export default function WalletsView({
           </div>
           <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
             <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-            <span className="truncate">{profile?.email || "Authenticated Tenant"}</span>
+            <span className="truncate">
+              {profile?.email || "Authenticated Tenant"}
+            </span>
           </div>
         </div>
       </div>
@@ -118,7 +122,8 @@ export default function WalletsView({
             Wallets Catalog
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Select a wallet to transfer funds, record deposits, or audit transaction history.
+            Select a wallet to transfer funds, record deposits, or audit
+            transaction history.
           </p>
         </div>
 
@@ -141,7 +146,8 @@ export default function WalletsView({
             No wallets created yet
           </h4>
           <p className="mx-auto max-w-sm text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Get started by initializing a new wallet account for your tenant members or business units.
+            Get started by initializing a new wallet account for your tenant
+            members or business units.
           </p>
           <button
             onClick={() => setIsModalOpen(true)}
@@ -185,7 +191,9 @@ export default function WalletsView({
 
                 {/* Wallet ID with Copy Action */}
                 <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                  <span className="font-mono">{shortenId(w.id, 8)}</span>
+                  <span className="font-mono">
+                    {shortenId("ID:" + w.id, 8)}
+                  </span>
                   <button
                     onClick={() => handleCopy(w.id)}
                     className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
@@ -260,7 +268,7 @@ export default function WalletsView({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Wallet Owner / Account Name
+              Wallet Name
             </label>
             <input
               type="text"
@@ -273,8 +281,11 @@ export default function WalletsView({
           </div>
 
           <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
-            <span className="font-semibold text-slate-700 dark:text-slate-300">Security Guarantee: </span>
-            A unique cryptographic UUID will be assigned. Initial balance starts at $0.00 backed by double-entry ledger verification.
+            <span className="font-semibold text-slate-700 dark:text-slate-300">
+              Security Guarantee:{" "}
+            </span>
+            A unique cryptographic UUID will be assigned. Initial balance starts
+            at $0.00 backed by double-entry ledger verification.
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-2">

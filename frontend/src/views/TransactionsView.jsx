@@ -162,7 +162,7 @@ export default function TransactionsView({
                   <option value="">Select a wallet...</option>
                   {wallets.map((w) => (
                     <option key={w.id} value={w.id}>
-                      {w.owner_name} — {formatCurrency(w.balance)} ({shortenId(w.id, 6)})
+                      {w.owner_name} — {formatCurrency(w.balance)}
                     </option>
                   ))}
                 </select>
@@ -194,7 +194,7 @@ export default function TransactionsView({
                       .filter((w) => w.id !== selectedWalletId)
                       .map((w) => (
                         <option key={w.id} value={w.id}>
-                          {w.owner_name} — {formatCurrency(w.balance)} ({shortenId(w.id, 6)})
+                          {w.owner_name} — {formatCurrency(w.balance)}
                         </option>
                       ))}
                   </select>

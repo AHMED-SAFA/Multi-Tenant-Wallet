@@ -38,9 +38,12 @@ export const transfer = (
   });
 export const getBalance = (wallet_id) =>
   client.get(`/wallets/${wallet_id}/balance/`);
+
 export const getTransactions = (wallet_id, page = 1) =>
   client.get(`/wallets/${wallet_id}/transactions/?page=${page}`);
+
 export const getProfile = () => client.get("/auth/me/");
+
 export const downloadStatement = async (wallet_id, days) => {
   const res = await client.get(
     `/wallets/${wallet_id}/statement/?days=${days}`,
@@ -101,6 +104,9 @@ export const parseApiError = (err) => {
     if (keys.length > 0) {
       const messages = keys.map((key) => {
         const val = data[key];
+        if (key === "non_field_errors") {
+          return Array.isArray(val) ? val.join(" ") : String(val);
+        }
         return `${key}: ${Array.isArray(val) ? val.join(" ") : String(val)}`;
       });
       return messages.join(" | ");
@@ -109,4 +115,3 @@ export const parseApiError = (err) => {
   }
   return err.message || "Network error. Please try again.";
 };
-

@@ -78,7 +78,7 @@ export function SidebarContent({
           </div>
           <div className="leading-tight">
             <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-              Nova<span className="text-indigo-600 dark:text-indigo-400">Pay</span>
+              SF<span className="text-indigo-600 dark:text-indigo-400">Pay</span>
             </h1>
             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
               Enterprise Ledger

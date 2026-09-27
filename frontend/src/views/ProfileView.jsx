@@ -24,7 +24,9 @@ export default function ProfileView({ profile, tenant, onLogout }) {
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 text-white backdrop-blur-md border border-white/20 text-2xl font-black">
-              {profile.tenant_name ? profile.tenant_name.slice(0, 2).toUpperCase() : "TE"}
+              {profile.tenant_name
+                ? profile.tenant_name.slice(0, 2).toUpperCase()
+                : "TE"}
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -59,7 +61,9 @@ export default function ProfileView({ profile, tenant, onLogout }) {
               <h4 className="text-base font-bold text-slate-900 dark:text-white">
                 Account Information
               </h4>
-              <p className="text-xs text-slate-400">Tenant administrator credentials</p>
+              <p className="text-xs text-slate-400">
+                Tenant administrator credentials
+              </p>
             </div>
           </div>
 
@@ -116,7 +120,9 @@ export default function ProfileView({ profile, tenant, onLogout }) {
               <h4 className="text-base font-bold text-slate-900 dark:text-white">
                 Security & Isolation Architecture
               </h4>
-              <p className="text-xs text-slate-400">Row-level security & JWT authorization</p>
+              <p className="text-xs text-slate-400">
+                Row-level security & JWT authorization
+              </p>
             </div>
           </div>
 
@@ -126,9 +132,6 @@ export default function ProfileView({ profile, tenant, onLogout }) {
                 <KeyIcon className="h-4 w-4 text-indigo-500" />
                 Session Authentication
               </div>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Tokens are signed via HMAC SHA-256 JWT tokens with automatic tenant namespace verification on every query.
-              </p>
             </div>
 
             <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
@@ -136,9 +139,6 @@ export default function ProfileView({ profile, tenant, onLogout }) {
                 <ShieldCheckIcon className="h-4 w-4 text-emerald-500" />
                 Multi-Tenant Row-Level Boundary
               </div>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Cross-tenant queries are blocked at the ORM layer. Other organizations' accounts return strict 404s to eliminate data leakage.
-              </p>
             </div>
           </div>
 

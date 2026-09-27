@@ -27,7 +27,7 @@ import ProfileView from "./views/ProfileView";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(
-    !!localStorage.getItem("access_token")
+    !!localStorage.getItem("access_token"),
   );
   const [tenant, setTenant] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -47,7 +47,7 @@ export default function App() {
 
   // Theme & Mobile Navigation
   const [darkMode, setDarkMode] = useState(
-    localStorage.getItem("dark") === "true"
+    localStorage.getItem("dark") === "true",
   );
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
@@ -98,7 +98,11 @@ export default function App() {
     setProfile(null);
     setWallets([]);
     setLoggedIn(false);
-    addToast("info", "Signed Out", "You have been logged out of the tenant realm.");
+    addToast(
+      "info",
+      "Signed Out",
+      "You have been logged out of the tenant realm.",
+    );
   };
 
   useEffect(() => {
@@ -123,7 +127,7 @@ export default function App() {
       addToast(
         "success",
         "Wallet Provisioned",
-        `Created wallet account for "${ownerName}" successfully.`
+        `Created wallet account for "${ownerName}" successfully.`,
       );
       await refreshWallets();
       return res;
@@ -142,7 +146,7 @@ export default function App() {
       addToast(
         "success",
         "Deposit Confirmed",
-        `Successfully credited ${formatCurrency(amount)} to wallet.`
+        `Successfully credited ${formatCurrency(amount)} to wallet.`,
       );
       await refreshWallets();
       return res;
@@ -161,7 +165,7 @@ export default function App() {
       addToast(
         "success",
         "Withdrawal Confirmed",
-        `Successfully debited ${formatCurrency(amount)} from wallet.`
+        `Successfully debited ${formatCurrency(amount)} from wallet.`,
       );
       await refreshWallets();
       return res;
@@ -173,14 +177,24 @@ export default function App() {
     }
   };
 
-  const handleTransfer = async (fromWalletId, toWalletId, amount, idempotencyKey) => {
+  const handleTransfer = async (
+    fromWalletId,
+    toWalletId,
+    amount,
+    idempotencyKey,
+  ) => {
     try {
-      const res = await transfer(fromWalletId, toWalletId, amount, idempotencyKey);
+      const res = await transfer(
+        fromWalletId,
+        toWalletId,
+        amount,
+        idempotencyKey,
+      );
       recordApiLog(res.data);
       addToast(
         "success",
         "Transfer Completed",
-        `Transferred ${formatCurrency(amount)} across tenant wallets with atomic lock.`
+        `Transferred ${formatCurrency(amount)} across tenant wallets with atomic lock.`,
       );
       await refreshWallets();
       return res;

@@ -21,6 +21,7 @@ export default function AuthView({ onLoggedIn }) {
   const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -99,7 +100,7 @@ export default function AuthView({ onLoggedIn }) {
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight text-white m-0">
-                Nova<span className="text-indigo-400">Pay</span>
+                SF<span className="text-indigo-400">Pay</span>
               </h1>
               <p className="text-[11px] font-semibold uppercase tracking-widest text-indigo-300">
                 Multi-Tenant Wallet Platform
@@ -120,7 +121,9 @@ export default function AuthView({ onLoggedIn }) {
           </h2>
 
           <p className="text-sm leading-relaxed text-slate-300">
-            Provision isolated tenant balances, execute concurrent transfers with row-level locks, and generate tamper-proof PDF audit statements on demand.
+            Provision isolated tenant balances, execute concurrent transfers
+            with row-level locks, and generate tamper-proof PDF audit statements
+            on demand.
           </p>
 
           <div className="grid grid-cols-2 gap-4 pt-4">
@@ -148,7 +151,7 @@ export default function AuthView({ onLoggedIn }) {
 
         {/* Bottom footer footnote */}
         <div className="relative z-10 text-xs text-slate-400">
-          Powered by Django REST Framework, JWT & React 19
+          Powered by Ahmed Nur E Safa
         </div>
       </div>
 
@@ -162,7 +165,10 @@ export default function AuthView({ onLoggedIn }) {
             </div>
             <div>
               <h1 className="text-lg font-bold text-slate-900 dark:text-white m-0">
-                Nova<span className="text-indigo-600 dark:text-indigo-400">Pay</span>
+                SF
+                <span className="text-indigo-600 dark:text-indigo-400">
+                  Pay
+                </span>
               </h1>
               <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
                 Multi-Tenant Wallet Platform
@@ -285,7 +291,9 @@ export default function AuthView({ onLoggedIn }) {
                 disabled={loading}
                 className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 hover:bg-indigo-500 disabled:opacity-50 transition active:scale-98"
               >
-                <span>{loading ? "Authenticating..." : "Sign In to Workspace"}</span>
+                <span>
+                  {loading ? "Authenticating..." : "Sign In to Workspace"}
+                </span>
                 <ArrowRightIcon className="h-4 w-4" />
               </button>
             </form>
@@ -335,30 +343,66 @@ export default function AuthView({ onLoggedIn }) {
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Password
                   </label>
-                  <input
-                    name="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="••••••••"
-                    required
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2 px-3 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-                  />
+                  <div className="relative">
+                    <input
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      required
+                      className="w-full rounded-xl border border-slate-300 bg-white py-2 pl-3 pr-10 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    />
+                    <button
+                      type="button"
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                      {showPassword ? (
+                        <EyeSlashIcon className="h-4 w-4" />
+                      ) : (
+                        <EyeIcon className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Confirm Password
                   </label>
-                  <input
-                    name="confirm_password"
-                    type="password"
-                    value={formData.confirm_password}
-                    onChange={handleChange}
-                    placeholder="••••••••"
-                    required
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2 px-3 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-                  />
+                  <div className="relative">
+                    <input
+                      name="confirm_password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={formData.confirm_password}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      required
+                      className="w-full rounded-xl border border-slate-300 bg-white py-2 pl-3 pr-10 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    />
+                    <button
+                      type="button"
+                      aria-label={
+                        showConfirmPassword
+                          ? "Hide confirm password"
+                          : "Show confirm password"
+                      }
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeSlashIcon className="h-4 w-4" />
+                      ) : (
+                        <EyeIcon className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -399,7 +443,9 @@ export default function AuthView({ onLoggedIn }) {
                 disabled={loading}
                 className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 hover:bg-indigo-500 disabled:opacity-50 transition active:scale-98"
               >
-                <span>{loading ? "Registering Tenant..." : "Create Tenant Realm"}</span>
+                <span>
+                  {loading ? "Registering Tenant..." : "Create Tenant Realm"}
+                </span>
                 <ArrowRightIcon className="h-4 w-4" />
               </button>
             </form>

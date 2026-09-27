@@ -48,8 +48,6 @@ export default function Topbar({
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
               Multi-Tenant Isolation
             </span>
-            <span>•</span>
-            <span>ACID Compliant</span>
           </div>
         </div>
       </div>

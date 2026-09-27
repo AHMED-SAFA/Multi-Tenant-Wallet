@@ -26,7 +26,7 @@ export default function HistoryView({
   onShowApiLog,
 }) {
   const [selectedWalletId, setSelectedWalletId] = useState(
-    initialWalletId || (wallets[0]?.id ?? "")
+    initialWalletId || (wallets[0]?.id ?? ""),
   );
   const [balance, setBalance] = useState(null);
   const [transactions, setTransactions] = useState([]);
@@ -173,7 +173,9 @@ export default function HistoryView({
                 title="Refresh Ledger"
                 className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition"
               >
-                <ArrowPathIcon className={`h-4 w-4 ${loading ? "animate-spin text-indigo-600" : ""}`} />
+                <ArrowPathIcon
+                  className={`h-4 w-4 ${loading ? "animate-spin text-indigo-600" : ""}`}
+                />
               </button>
             </div>
           </div>
@@ -181,19 +183,23 @@ export default function HistoryView({
           {selectedWallet && (
             <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <p className="text-xs text-slate-400 font-medium">Recomputed Ledger Balance</p>
+                <p className="text-xs text-slate-400 font-medium">
+                  Recomputed Ledger Balance
+                </p>
                 <div className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-                  {formatCurrency(balance !== null ? balance : selectedWallet.balance)}
+                  {formatCurrency(
+                    balance !== null ? balance : selectedWallet.balance,
+                  )}
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Owner: <span className="font-semibold text-slate-700 dark:text-slate-200">{selectedWallet.owner_name}</span>
+                  Owner:{" "}
+                  <span className="font-semibold text-slate-700 dark:text-slate-200">
+                    {selectedWallet.owner_name}
+                  </span>
                 </p>
               </div>
 
               <div className="rounded-2xl bg-slate-50 p-3.5 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-xs">
-                <div className="text-slate-500 dark:text-slate-400 font-mono">
-                  UUID: {selectedWallet.id}
-                </div>
                 <div className="mt-1 flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
                   Cryptographically Verified Ledger
@@ -216,7 +222,8 @@ export default function HistoryView({
               Download PDF Report
             </h4>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-              Export an official auditor-ready PDF with complete transaction logs, timestamps, and balance trails.
+              Export an official auditor-ready PDF with complete transaction
+              logs, timestamps, and balance trails.
             </p>
 
             {/* Period Selection Buttons */}
@@ -253,7 +260,9 @@ export default function HistoryView({
             className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 disabled:opacity-50 transition active:scale-95"
           >
             <DocumentArrowDownIcon className="h-4 w-4" />
-            <span>{downloading ? "Generating PDF..." : "Export PDF Statement"}</span>
+            <span>
+              {downloading ? "Generating PDF..." : "Export PDF Statement"}
+            </span>
           </button>
         </div>
       </div>
@@ -302,7 +311,8 @@ export default function HistoryView({
               No transactions recorded for this wallet
             </p>
             <p className="text-xs text-slate-400 mt-1">
-              Deposit or transfer funds to begin building this wallet's immutable history.
+              Deposit or transfer funds to begin building this wallet's
+              immutable history.
             </p>
           </div>
         ) : (
@@ -334,9 +344,7 @@ export default function HistoryView({
                             {badge.icon}
                             {badge.label}
                           </span>
-                          <span className="font-mono text-xs text-slate-400">
-                            {shortenId(tx.id, 5)}
-                          </span>
+                          
                         </div>
                       </td>
 
