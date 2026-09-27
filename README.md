@@ -248,57 +248,64 @@ sequenceDiagram
 
 ### 1. Dashboard Overview & Tenant Context
 
-![Dashboard Overview](screenshots/dashboard_overview.png)
+<img width="1910" height="868" alt="Dash" src="https://github.com/user-attachments/assets/83620020-5eac-4758-96e1-b5636c3f28cd" />
+
 _Real-time tenant balance rollup, active wallet counters, recent ledger transactions, and quick action controls._
 
 ---
 
-### 2. Multi-Tenant Onboarding & API Key Generation
+### 2. Multi-Tenant Onboarding
 
-![Tenant Registration](screenshots/tenant_registration.png)
+<img width="1920" height="848" alt="reg" src="https://github.com/user-attachments/assets/dc653e2e-1aa7-43a4-ac86-7171f827c8dd" />
+
+<img width="1902" height="832" alt="login" src="https://github.com/user-attachments/assets/ded1ebf1-1bec-4477-81e7-5be752c208c3" />
+
+
 _Onboarding flow with automatic tenant entity provisioning, JWT token emission, and dedicated API key generation._
 
 ---
 
-### 3. Wallet Creation & Balance Tracking
-
-![Wallet Management](screenshots/wallet_management.png)
-_Creation of customer wallets under the isolated tenant namespace, displaying UUIDs, owner details, and real-time ledger balances._
-
 ---
 
-### 4. Idempotent Deposit & Withdrawal Operations
+### 3. Idempotent Deposit & Withdrawal Operations
 
-![Deposit & Withdrawal](screenshots/deposit_withdraw.png)
+<img width="1912" height="862" alt="transaction" src="https://github.com/user-attachments/assets/74fad504-03c5-490d-8e3e-66f00b87e292" />
+
 _Executing deposit and withdrawal flows with idempotency key headers, verifying instant ledger reconciliation and double-spend prevention._
 
 ---
 
-### 5. Atomic Peer-to-Peer Wallet Transfer
+### 4. Atomic Peer-to-Peer Wallet Transfer
 
-![Atomic Wallet Transfer](screenshots/wallet_transfer.png)
+<img width="1910" height="862" alt="transfer" src="https://github.com/user-attachments/assets/75ce8a2d-a566-4abb-8b20-b02795a7852a" />
+
 _Atomic fund transfer between two wallets of the same organization, showing balanced debit and credit entries with shared transfer correlation IDs._
 
 ---
 
-### 6. Cross-Tenant Protection & Access Denied Proof
+### 5. Cross-Tenant Protection & Access Denied Proof
 
-![Cross-Tenant Isolation](screenshots/cross_tenant_rejection.png)
-_Verification that attempts to read, transfer to, or withdraw from another tenant's wallet return an obfuscated 404 response without data leakage._
+<img width="1920" height="877" alt="Screenshot 2026-09-27 125617" src="https://github.com/user-attachments/assets/9c5e9fb8-4e95-46ec-bd66-5e2ae667e739" />
 
 ---
 
-### 7. Immutable Ledger & Paginated Transaction Log
+### 6. Immutable Ledger & Paginated Transaction Log
 
-![Ledger Audit Trail](screenshots/ledger_history.png)
+<img width="1907" height="862" alt="statement" src="https://github.com/user-attachments/assets/90a23d65-b317-4370-97ec-1b6663e949ad" />
+
 _Detailed transaction audit trail with pagination, type badges, idempotency keys, timestamps, and balance-after verification._
 
 ---
 
-### 8. Downloadable PDF Audit Statement
+### 7. Downloadable PDF Audit Statement
 
-![PDF Statement](screenshots/pdf_statement.png)
+<img width="867" height="692" alt="downld pdf" src="https://github.com/user-attachments/assets/636e79cc-8870-499d-9fb2-731a575dacad" />
+
 _Exported formal PDF account statement dynamically rendered with ReportLab, featuring transaction breakdown and period filters._
+
+### 8. Profile with dark mode
+
+<img width="1917" height="872" alt="profile" src="https://github.com/user-attachments/assets/3b48e46c-cab7-4d5a-9cb5-6afddb79b35a" />
 
 ---
 
