@@ -6,10 +6,8 @@ import {
   ArrowsRightLeftIcon,
   DocumentArrowDownIcon,
   ArrowPathIcon,
-  MagnifyingGlassIcon,
   ClipboardDocumentIcon,
   CheckIcon,
-  FunnelIcon,
 } from "@heroicons/react/24/outline";
 import {
   getBalance,

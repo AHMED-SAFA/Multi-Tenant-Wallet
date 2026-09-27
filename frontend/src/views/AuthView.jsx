@@ -5,8 +5,6 @@ import {
   LockClosedIcon,
   EnvelopeIcon,
   BuildingOfficeIcon,
-  PhoneIcon,
-  UserIcon,
   EyeIcon,
   EyeSlashIcon,
   ArrowRightIcon,
